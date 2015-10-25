@@ -59,18 +59,7 @@ class MenuAttributesTest extends TestCase
     /** @test */
     public function it_can_fill_the_fillable_properties()
     {
-        $properties = [
-            'url'        => $this->baseUrl,
-            'route'      => 'public::home',
-            'title'      => 'Home',
-            'name'       => 'public::home',
-            'icon'       => 'fa fa-fw fa-home',
-            'parent'     => null,
-            'attributes' => ['color' => 'menu-item'],
-            'active'     => true,
-            'order'      => 1,
-        ];
-
+        $properties       = $this->getHomeProperties();
         $this->attributes = new MenuAttributes($properties);
 
         $this->assertCount(count($properties), $this->attributes);

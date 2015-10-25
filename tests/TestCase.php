@@ -65,4 +65,28 @@ abstract class TestCase extends BaseTestCase
     {
         //
     }
+
+    /* ------------------------------------------------------------------------------------------------
+     |  Other Functions
+     | ------------------------------------------------------------------------------------------------
+     */
+    /**
+     * Get home item properties.
+     *
+     * @return array
+     */
+    protected function getHomeProperties()
+    {
+        return [
+            'url'        => $this->baseUrl,
+            'route'      => 'public::home',
+            'title'      => 'Home',
+            'name'       => 'public::home',
+            'icon'       => 'fa fa-fw fa-home',
+            'parent'     => null,
+            'attributes' => ['color' => 'menu-item'],
+            'active'     => true,
+            'order'      => 1,
+        ];
+    }
 }
