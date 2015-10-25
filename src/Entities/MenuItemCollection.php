@@ -1,5 +1,6 @@
 <?php namespace Arcanedev\Menus\Entities;
 
+use Arcanedev\Menus\Contracts\MenuItemCollectionInterface;
 use Arcanedev\Support\Collection;
 use Closure;
 
@@ -9,7 +10,7 @@ use Closure;
  * @package  Arcanedev\Menus\Entities
  * @author   ARCANEDEV <arcanedev.maroc@gmail.com>
  */
-class MenuItemCollection extends Collection
+class MenuItemCollection extends Collection implements MenuItemCollectionInterface
 {
     /* ------------------------------------------------------------------------------------------------
      |  Main Functions
@@ -46,25 +47,6 @@ class MenuItemCollection extends Collection
     }
 
     /**
-     * Make a menu item.
-     *
-     * @param  array     $attributes
-     * @param  \Closure  $callback
-     *
-     * @return \Arcanedev\Menus\Entities\MenuItem
-     */
-    private function makeItem(array $attributes, Closure $callback = null)
-    {
-        $item = MenuItem::make($attributes);
-
-        if ( ! is_null($callback)) {
-            call_user_func($callback, $item);
-        }
-
-        return $item;
-    }
-
-    /**
      * Add a menu header item to collection.
      *
      * @param  string    $title
@@ -87,5 +69,28 @@ class MenuItemCollection extends Collection
         $name = 'divider';
 
         $this->addItem(compact('name', 'order'));
+    }
+
+    /* ------------------------------------------------------------------------------------------------
+     |  Other Functions
+     | ------------------------------------------------------------------------------------------------
+     */
+    /**
+     * Make a menu item.
+     *
+     * @param  array     $attributes
+     * @param  \Closure  $callback
+     *
+     * @return \Arcanedev\Menus\Entities\MenuItem
+     */
+    private function makeItem(array $attributes, Closure $callback = null)
+    {
+        $item = MenuItem::make($attributes);
+
+        if ( ! is_null($callback)) {
+            call_user_func($callback, $item);
+        }
+
+        return $item;
     }
 }

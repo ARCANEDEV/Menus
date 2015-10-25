@@ -1,5 +1,6 @@
 <?php namespace Arcanedev\Menus\Entities;
 
+use Arcanedev\Menus\Contracts\MenuItemInterface;
 use Closure;
 use Illuminate\Contracts\Support\Arrayable;
 
@@ -9,7 +10,7 @@ use Illuminate\Contracts\Support\Arrayable;
  * @package  Arcanedev\Menus\Entities
  * @author   ARCANEDEV <arcanedev.maroc@gmail.com>
  */
-class MenuItem implements Arrayable
+class MenuItem implements MenuItemInterface, Arrayable
 {
     /* ------------------------------------------------------------------------------------------------
      |  Properties
@@ -136,7 +137,7 @@ class MenuItem implements Arrayable
      *
      * @param array $properties
      *
-     * @return $this
+     * @return \Arcanedev\Menus\Entities\MenuItem
      */
     public function add(array $properties)
     {
