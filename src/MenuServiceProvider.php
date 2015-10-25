@@ -2,6 +2,12 @@
 
 use Arcanedev\Support\PackageServiceProvider;
 
+/**
+ * Class     MenuServiceProvider
+ *
+ * @package  Arcanedev\Menus
+ * @author   ARCANEDEV <arcanedev.maroc@gmail.com>
+ */
 class MenuServiceProvider extends PackageServiceProvider
 {
     /* ------------------------------------------------------------------------------------------------
@@ -45,7 +51,7 @@ class MenuServiceProvider extends PackageServiceProvider
      */
     public function register()
     {
-        // TODO: Implement register() method.
+        $this->registerConfig();
     }
 
     /**
@@ -54,6 +60,10 @@ class MenuServiceProvider extends PackageServiceProvider
     public function boot()
     {
         parent::boot();
+
+        $this->publishes([
+            $this->getConfigFile() => config_path("{$this->package}.php"),
+        ], 'config');
     }
 
     /**
