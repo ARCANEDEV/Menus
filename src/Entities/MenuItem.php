@@ -9,6 +9,16 @@ use Illuminate\Contracts\Support\Arrayable;
  *
  * @package  Arcanedev\Menus\Entities
  * @author   ARCANEDEV <arcanedev.maroc@gmail.com>
+ *
+ * @property  string  url
+ * @property  string  route
+ * @property  string  title
+ * @property  string  name
+ * @property  string  icon
+ * @property  string  parent
+ * @property  array   attributes
+ * @property  bool    active
+ * @property  int     order
  */
 class MenuItem implements MenuItemInterface, Arrayable
 {
@@ -28,7 +38,7 @@ class MenuItem implements MenuItemInterface, Arrayable
      *
      * @var MenuAttributes
      */
-    protected $attributes;
+    protected $attrs;
 
     /**
      * The menu sub-items.
@@ -76,7 +86,7 @@ class MenuItem implements MenuItemInterface, Arrayable
     private function setProperties(array $properties)
     {
         $this->properties = $properties;
-        $this->attributes = MenuAttributes::make($properties);
+        $this->attrs      = MenuAttributes::make($properties);
 
         return $this;
     }
@@ -88,7 +98,7 @@ class MenuItem implements MenuItemInterface, Arrayable
      */
     public function getAttributes()
     {
-        $attributes = $this->attributes;
+        $attributes = $this->attrs;
 
         return $attributes->forget(['active', 'icon'])->toArray();
     }
@@ -101,6 +111,18 @@ class MenuItem implements MenuItemInterface, Arrayable
     public function getChildren()
     {
         return $this->subItems;
+    }
+
+    /**
+     * Get menu item attribute.
+     *
+     * @param  string  $name
+     *
+     * @return mixed
+     */
+    public function __get($name)
+    {
+        return $this->attrs->get($name, null);
     }
 
     /* ------------------------------------------------------------------------------------------------

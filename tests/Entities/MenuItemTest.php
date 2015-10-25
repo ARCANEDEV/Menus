@@ -70,6 +70,17 @@ class MenuItemTest extends TestCase
     }
 
     /** @test */
+    public function it_can_access_menu_item_attributes()
+    {
+        $properties     = $this->getHomeProperties();
+        $this->menuItem = MenuItem::make($properties);
+
+        foreach ($properties as $name => $value) {
+            $this->assertEquals($value, $this->menuItem->{$name});
+        }
+    }
+
+    /** @test */
     public function it_can_add_a_sub_item()
     {
         $this->menuItem->add([
