@@ -157,4 +157,38 @@ class MenuItemTest extends TestCase
 
         $this->assertCount(3, $dropdown->getChildren());
     }
+
+    /** @test */
+    public function it_can_add_header_sub_item()
+    {
+        $title  = 'Header item';
+        $this->menuItem->addHeader($title);
+        $header = $this->menuItem->getChildren()->get(0);
+
+        $this->assertEquals('header', $header->name);
+        $this->assertEquals($title,   $header->title);
+
+        $title  = 'Second header';
+        $this->menuItem->header($title);
+        $header = $this->menuItem->getChildren()->get(1);
+
+        $this->assertEquals('header', $header->name);
+        $this->assertEquals($title,   $header->title);
+    }
+
+    /** @test */
+    public function it_can_add_divider_sub_item()
+    {
+        $this->menuItem->addDivider();
+
+        $divider = $this->menuItem->getChildren()->get(0);
+
+        $this->assertEquals('divider', $divider->name);
+
+        $this->menuItem->divider();
+
+        $divider = $this->menuItem->getChildren()->get(1);
+
+        $this->assertEquals('divider', $divider->name);
+    }
 }

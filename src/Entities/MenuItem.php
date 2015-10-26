@@ -218,6 +218,58 @@ class MenuItem implements MenuItemInterface, Arrayable
     }
 
     /**
+     * Add a header item (alias).
+     * @see    \Arcanedev\Menus\Entities\MenuItem::addHeader()
+     *
+     * @param  string  $title
+     *
+     * @return \Arcanedev\Menus\Entities\MenuItem
+     */
+    public function header($title)
+    {
+        return $this->addHeader($title);
+    }
+
+    /**
+     * Add a header item.
+     *
+     * @param  string  $title
+     *
+     * @return \Arcanedev\Menus\Entities\MenuItem
+     */
+    public function addHeader($title)
+    {
+        $this->subItems->addHeader($title, null);
+
+        return $this;
+    }
+
+    /**
+     * Add a divider item (alias).
+     * @see    \Arcanedev\Menus\Entities\MenuItem::addDivider()
+     *
+     * @return \Arcanedev\Menus\Entities\MenuItem
+     */
+    public function divider()
+    {
+        return $this->addDivider();
+    }
+
+    /**
+     * Add a divider item.
+     *
+     * @param int $order
+     *
+     * @return \Arcanedev\Menus\Entities\MenuItem
+     */
+    public function addDivider($order = null)
+    {
+        $this->subItems->addDivider($order);
+
+        return $this;
+    }
+
+    /**
      * Get the instance as an array.
      *
      * @return array

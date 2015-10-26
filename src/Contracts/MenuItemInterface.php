@@ -102,4 +102,40 @@ interface MenuItemInterface
      * @return \Arcanedev\Menus\Contracts\MenuItemInterface
      */
     public function dropdown($title, $order = 0, Closure $callback);
+
+    /**
+     * Add a header item (alias).
+     * @see    \Arcanedev\Menus\Contracts\MenuItemInterface::addHeader()
+     *
+     * @param  string  $title
+     *
+     * @return \Arcanedev\Menus\Contracts\MenuItemInterface
+     */
+    public function header($title);
+
+    /**
+     * Add a header item.
+     *
+     * @param  string  $title
+     *
+     * @return \Arcanedev\Menus\Contracts\MenuItemInterface
+     */
+    public function addHeader($title);
+
+    /**
+     * Add a divider item (alias).
+     * @see    \Arcanedev\Menus\Contracts\MenuItemInterface::addDivider()
+     *
+     * @return \Arcanedev\Menus\Contracts\MenuItemInterface
+     */
+    public function divider();
+
+    /**
+     * Add a divider item.
+     *
+     * @param int $order
+     *
+     * @return \Arcanedev\Menus\Contracts\MenuItemInterface
+     */
+    public function addDivider($order = null);
 }
