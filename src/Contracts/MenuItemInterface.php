@@ -1,6 +1,7 @@
 <?php namespace Arcanedev\Menus\Contracts;
 
 use Closure;
+use Illuminate\Contracts\Support\Arrayable;
 
 /**
  * Interface  MenuItemInterface
@@ -8,7 +9,7 @@ use Closure;
  * @package   Arcanedev\Menus\Contracts
  * @author    ARCANEDEV <arcanedev.maroc@gmail.com>
  */
-interface MenuItemInterface
+interface MenuItemInterface extends Arrayable
 {
     /* ------------------------------------------------------------------------------------------------
      |  Getters & Setters

@@ -2,7 +2,6 @@
 
 use Arcanedev\Menus\Contracts\MenuItemInterface;
 use Closure;
-use Illuminate\Contracts\Support\Arrayable;
 
 /**
  * Class     MenuItem
@@ -20,7 +19,7 @@ use Illuminate\Contracts\Support\Arrayable;
  * @property  bool    active
  * @property  int     order
  */
-class MenuItem implements MenuItemInterface, Arrayable
+class MenuItem implements MenuItemInterface
 {
     /* ------------------------------------------------------------------------------------------------
      |  Properties
