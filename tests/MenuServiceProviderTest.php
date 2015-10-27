@@ -1,5 +1,5 @@
 <?php namespace Arcanedev\Menus\Tests;
-use Arcanedev\Menus\MenuServiceProvider;
+use Arcanedev\Menus\MenusServiceProvider;
 
 /**
  * Class     MenuServiceProviderTest
@@ -13,7 +13,7 @@ class MenuServiceProviderTest extends TestCase
      |  Properties
      | ------------------------------------------------------------------------------------------------
      */
-    /** @var MenuServiceProvider */
+    /** @var MenusServiceProvider */
     private $provider;
 
     /* ------------------------------------------------------------------------------------------------
@@ -24,7 +24,7 @@ class MenuServiceProviderTest extends TestCase
     {
         parent::setUp();
 
-        $this->provider = $this->app->getProvider(MenuServiceProvider::class);
+        $this->provider = $this->app->getProvider(MenusServiceProvider::class);
     }
 
     public function tearDown()
@@ -45,7 +45,7 @@ class MenuServiceProviderTest extends TestCase
             \Illuminate\Support\ServiceProvider::class,
             \Arcanedev\Support\ServiceProvider::class,
             \Arcanedev\Support\PackageServiceProvider::class,
-            \Arcanedev\Menus\MenuServiceProvider::class,
+            \Arcanedev\Menus\MenusServiceProvider::class,
         ];
 
         foreach ($expectations as $expected) {
@@ -56,7 +56,10 @@ class MenuServiceProviderTest extends TestCase
     /** @test */
     public function it_can_provides()
     {
-        $expected = [];
+        $expected = [
+            'arcanedev.menus.manager',
+            \Arcanedev\Menus\Contracts\MenusManager::class,
+        ];
 
         $this->assertEquals($expected, $this->provider->provides());
     }

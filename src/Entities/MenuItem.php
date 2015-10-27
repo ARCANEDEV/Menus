@@ -1,6 +1,6 @@
 <?php namespace Arcanedev\Menus\Entities;
 
-use Arcanedev\Menus\Contracts\MenuItemInterface;
+use Arcanedev\Menus\Contracts\Entities\MenuItemInterface;
 use Closure;
 
 /**
@@ -8,16 +8,6 @@ use Closure;
  *
  * @package  Arcanedev\Menus\Entities
  * @author   ARCANEDEV <arcanedev.maroc@gmail.com>
- *
- * @property  string  url
- * @property  string  route
- * @property  string  title
- * @property  string  name
- * @property  string  icon
- * @property  string  parent
- * @property  array   attributes
- * @property  bool    active
- * @property  int     order
  */
 class MenuItem implements MenuItemInterface
 {
@@ -26,38 +16,52 @@ class MenuItem implements MenuItemInterface
      | ------------------------------------------------------------------------------------------------
      */
     /**
-     * The menu item properties.
+     * Menu item type.
+     *
+     * @var string
+     */
+    protected $type;
+
+    /**
+     * Menu item root status.
+     *
+     * @var bool
+     */
+    protected $root = false;
+
+    /**
+     * Menu item properties.
      *
      * @var array
      */
-    protected $properties = [];
+    protected $properties;
 
     /**
-     * The menu item attributes.
+     * Menu item attributes.
      *
-     * @var MenuAttributes
+     * @var MenuItemAttributes
      */
-    protected $attrs;
+    protected $attributes;
 
     /**
-     * The menu sub-items.
+     * Menu item children.
      *
      * @var MenuItemCollection
      */
-    protected $subItems;
+    protected $children;
 
     /* ------------------------------------------------------------------------------------------------
      |  Constructor
      | ------------------------------------------------------------------------------------------------
      */
     /**
-     * Make the MenuItem instance.
+     * Make menu item instance.
      *
      * @param  array  $properties
      */
-    public function __construct(array $properties = [])
+    public function __construct(array $properties)
     {
-        $this->subItems = new MenuItemCollection;
+        $this->children   = new MenuItemCollection;
         $this->setProperties($properties);
     }
 
@@ -66,26 +70,61 @@ class MenuItem implements MenuItemInterface
      | ------------------------------------------------------------------------------------------------
      */
     /**
-     * Get the menu item properties.
+     * Set the menu item type.
      *
-     * @return array
+     * @param  array  $properties
      */
-    public function getProperties()
+    private function setType(array &$properties)
     {
-        return $this->properties;
+        $type = array_pull($properties, 'type', null);
+
+        if (is_null($type)) {
+            $type = $this->guessType($properties);
+        }
+
+        $this->type = $type;
     }
 
     /**
-     * Set the menu item properties.
+     * Set the menu item root status.
+     *
+     * @param  array  $properties
+     */
+    private function setRoot(array &$properties)
+    {
+        $this->root = array_pull($properties, 'root', false);
+    }
+
+    /**
+     * Get the menu item property.
+     *
+     * @param  string      $name
+     * @param  mixed|null  $default
+     *
+     * @return mixed
+     */
+    public function getProperty($name, $default = null)
+    {
+        return array_get($this->properties, $name, $default);
+    }
+
+    /**
+     * Set the item properties.
      *
      * @param  array  $properties
      *
-     * @return \Arcanedev\Menus\Entities\MenuItem
+     * @return self
      */
     private function setProperties(array $properties)
     {
-        $this->properties = $properties;
-        $this->attrs      = MenuAttributes::make($properties);
+        $this->setType($properties);
+        $this->setRoot($properties);
+        $this->attributes = MenuItemAttributes::make(
+            array_pull($properties, 'attributes', [])
+        );
+        $this->properties = array_only($properties, [
+            'url', 'route', 'action', 'content', 'icon', 'active', 'position',
+        ]);
 
         return $this;
     }
@@ -93,35 +132,79 @@ class MenuItem implements MenuItemInterface
     /**
      * Get the menu item attributes.
      *
-     * @return array
+     * @return \Arcanedev\Menus\Entities\MenuItemAttributes
      */
-    public function getAttributes()
+    public function attributes()
     {
-        $attributes = $this->attrs;
-
-        return $attributes->forget(['active', 'icon'])->toArray();
+        return $this->attributes;
     }
 
     /**
-     * Get the menu sub-items collection.
+     * Get all sub-items.
      *
      * @return \Arcanedev\Menus\Entities\MenuItemCollection
      */
-    public function getChildren()
+    public function children()
     {
-        return $this->subItems;
+        return $this->children;
     }
 
     /**
-     * Get menu item attribute.
-     *
-     * @param  string  $name
-     *
-     * @return mixed
+     * Get the menu item url.
      */
-    public function __get($name)
+    public function getUrl()
     {
-        return $this->attrs->get($name, null);
+        if ($this->hasChildren()) {
+            return '#';
+        }
+
+        switch ($this->type) {
+            case 'url':
+                return $this->getProperty('url');
+
+            case 'route':
+                list($route, $parameters) = $this->getProperty('route');
+                return route($route, $parameters);
+
+            case 'action':
+                list($action, $parameters) = $this->getProperty('action');
+                return action($action, $parameters);
+
+            default:
+                return '';
+        }
+    }
+
+    /**
+     * Get the menu item icon.
+     *
+     * @param  string  $tag
+     *
+     * @return string
+     */
+    public function getIcon($tag = 'i')
+    {
+        $icon = array_get($this->properties, 'icon', null);
+
+        if (is_null($icon)) {
+            return '';
+        }
+
+        $attributes = MenuItemAttributes::make([
+            'class' => $icon
+        ]);
+
+        return "<$tag " . $attributes . "></$tag>";
+    }
+
+    /**
+     * Get the menu item content.
+     *
+     * @return string
+     */
+    public function getContent()
+    {
+        return $this->getProperty('content', '');
     }
 
     /* ------------------------------------------------------------------------------------------------
@@ -129,157 +212,173 @@ class MenuItem implements MenuItemInterface
      | ------------------------------------------------------------------------------------------------
      */
     /**
-     * Make the MenuItem instance.
+     * Make MenuItem instance.
      *
-     * @param  array  $properties
-     *
-     * @return \Arcanedev\Menus\Entities\MenuItem
-     */
-    public static function make(array $properties)
-    {
-        return new self($properties);
-    }
-
-    /**
-     * Add a sub menu item.
-     * @see \Arcanedev\Menus\Entities\MenuItem::add()
-     *
-     * @param  array  $properties
-     *
-     * @return \Arcanedev\Menus\Entities\MenuItem
-     */
-    public function child(array $properties)
-    {
-        return $this->add($properties);
-    }
-
-    /**
-     * Add new child item.
-     *
-     * @param array $properties
-     *
-     * @return \Arcanedev\Menus\Entities\MenuItem
-     */
-    public function add(array $properties)
-    {
-        $this->addSubItem($properties);
-
-        return $this;
-    }
-
-    /**
-     * Adding new menu item by route.
-     *
-     * @param  string    $route
-     * @param  string    $title
-     * @param  array     $parameters
-     * @param  int|null  $order
-     * @param  array     $attributes
-     *
-     * @return \Arcanedev\Menus\Entities\MenuItem
-     */
-    public function route($route, $title, $parameters = [], $order = 0, $attributes = [])
-    {
-        $route = [$route, $parameters];
-
-        return $this->add(compact('route', 'title', 'order', 'attributes'));
-    }
-
-    /**
-     * Adding new menu item by url.
-     *
-     * @param  string  $url
-     * @param  string  $title
-     * @param  int     $order
-     * @param  array   $attributes
-     *
-     * @return \Arcanedev\Menus\Entities\MenuItem
-     */
-    public function url($url, $title, $order = 0, $attributes = [])
-    {
-        return $this->add(compact('url', 'title', 'order', 'attributes'));
-    }
-
-    /**
-     * Add a sub menu item with dropdown menu.
-     *
-     * @param  string    $title
-     * @param  int       $order
+     * @param  array     $properties
      * @param  \Closure  $callback
      *
      * @return \Arcanedev\Menus\Entities\MenuItem
      */
-    public function dropdown($title, $order = 0, Closure $callback)
+    public static function make($properties, Closure $callback = null)
     {
-        $this->addSubItem(compact('title', 'order'), $callback);
+        $item = new self($properties);
+
+        if (is_callable($callback)) {
+            call_user_func($callback, $item);
+        }
+
+        return $item;
+    }
+
+    /**
+     * Fill the menu item properties.
+     *
+     * @param  array  $properties
+     *
+     * @return \Arcanedev\Menus\Entities\MenuItem
+     */
+    public function fill(array $properties)
+    {
+        $this->setProperties($properties);
 
         return $this;
     }
 
     /**
-     * Add a header item (alias).
-     * @see    \Arcanedev\Menus\Entities\MenuItem::addHeader()
+     * Add an url sub-item to the parent.
      *
-     * @param  string  $title
-     *
-     * @return \Arcanedev\Menus\Entities\MenuItem
+     * @param  string  $url
+     * @param  string  $content
+     * @param  array   $attributes
      */
-    public function header($title)
+    public function url($url, $content, array $attributes = [])
     {
-        return $this->addHeader($title);
+        $this->makeSubItem('url', compact('url', 'content', 'attributes'));
     }
 
     /**
-     * Add a header item.
+     * Add a route sub-item to the parent.
      *
-     * @param  string  $title
-     *
-     * @return \Arcanedev\Menus\Entities\MenuItem
+     * @param  string  $route
+     * @param  string  $content
+     * @param  array   $parameters
+     * @param  array   $attributes
      */
-    public function addHeader($title)
+    public function route($route, $content, array $parameters = [], array $attributes = [])
     {
-        $this->subItems->addHeader($title, null);
+        $route = [$route, $parameters];
 
-        return $this;
+        $this->makeSubItem('route', compact('route', 'content', 'attributes'));
     }
 
     /**
-     * Add a divider item (alias).
-     * @see    \Arcanedev\Menus\Entities\MenuItem::addDivider()
+     * Add an action sub-item to parent.
      *
-     * @return \Arcanedev\Menus\Entities\MenuItem
+     * @param  string  $action
+     * @param  string  $content
+     * @param  array   $parameters
+     * @param  array   $attributes
+     */
+    public function action($action, $content, array $parameters = [], array $attributes = [])
+    {
+        $action = [$action, $parameters];
+
+        $this->makeSubItem('action', compact('action', 'content', 'attributes'));
+    }
+
+    /**
+     * Add a dropdown sub-item to the parent.
+     *
+     * @param  string    $content
+     * @param  \Closure  $callback
+     * @param  array     $attributes
+     */
+    public function dropdown($content, Closure $callback, array $attributes = [])
+    {
+        $this->makeSubItem('dropdown', compact('content', 'attributes'), $callback);
+    }
+
+    /**
+     * Add a divider sub-item to the parent.
      */
     public function divider()
     {
-        return $this->addDivider();
+        $this->makeSubItem('divider');
     }
 
     /**
-     * Add a divider item.
+     * Add a header item to the parent.
      *
-     * @param int $order
-     *
-     * @return \Arcanedev\Menus\Entities\MenuItem
+     * @param  string  $content
      */
-    public function addDivider($order = null)
+    public function header($content)
     {
-        $this->subItems->addDivider($order);
-
-        return $this;
+        $this->makeSubItem('header', compact('content'));
     }
 
     /**
-     * Get the instance as an array.
+     * Add an item to the parent.
      *
-     * @return array
+     * @param  array     $properties
+     * @param  \Closure  $callback
      */
-    public function toArray()
+    public function add(array $properties, Closure $callback = null)
     {
-        return [
-            'properties' => $this->getProperties(),
-            'attributes' => $this->getAttributes(),
-            'sub-items'  => $this->subItems->toArray(),
-        ];
+        $this->makeSubItem(null, $properties, $callback);
+    }
+
+    /* ------------------------------------------------------------------------------------------------
+     |  Check Functions
+     | ------------------------------------------------------------------------------------------------
+     */
+    /**
+     * Check if the menu item is root.
+     *
+     * @return bool
+     */
+    public function isRoot()
+    {
+        return $this->root;
+    }
+
+    /**
+     * Check if the menu item is a header.
+     *
+     * @return bool
+     */
+    public function isHeader()
+    {
+        return $this->type === 'header';
+    }
+
+    /**
+     * Check if menu item is a divider.
+     *
+     * @return bool
+     */
+    public function isDivider()
+    {
+        return $this->type === 'divider';
+    }
+
+    /**
+     * Check if menu item is active.
+     *
+     * @return bool
+     */
+    public function isActive()
+    {
+        return (bool) $this->getProperty('active', false);
+    }
+
+    /**
+     * Check if the menu item has sub-items.
+     *
+     * @return bool
+     */
+    public function hasChildren()
+    {
+        return ! $this->children()->isEmpty();
     }
 
     /* ------------------------------------------------------------------------------------------------
@@ -287,13 +386,53 @@ class MenuItem implements MenuItemInterface
      | ------------------------------------------------------------------------------------------------
      */
     /**
-     * Adding a sub menu item.
+     * Make an child item and add it to the parent item.
      *
+     * @param  string         $type
      * @param  array          $properties
      * @param  \Closure|null  $callback
+     *
+     * @return self
      */
-    private function addSubItem(array $properties, Closure $callback = null)
+    private function makeSubItem($type, array $properties = [], Closure $callback = null)
     {
-        $this->subItems->addItem($properties, $callback);
+        $properties = array_merge($properties, [
+            'type'   => $type,
+        ]);
+
+        $item = self::make($properties, $callback);
+        $this->addChild($item);
+
+        return $item;
+    }
+
+    /**
+     * Add a child item to collection.
+     *
+     * @param  self  $item
+     */
+    private function addChild(MenuItem $item)
+    {
+        $this->children->push($item);
+    }
+
+    /**
+     * Guess the menu item type.
+     *
+     * @param  array  $properties
+     *
+     * @return string|null
+     */
+    private function guessType(array $properties)
+    {
+        $types = ['url', 'route', 'action'];
+
+        foreach ($types as $type) {
+            if (array_key_exists($type, $properties)) {
+                return $type;
+            }
+        }
+
+        return null;
     }
 }
