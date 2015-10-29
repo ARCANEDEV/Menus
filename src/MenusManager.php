@@ -60,6 +60,18 @@ class MenusManager implements Contracts\MenusManager
     }
 
     /**
+     * Get a menu from collection.
+     *
+     * @param  string  $name
+     *
+     * @return \Arcanedev\Menus\Entities\Menu
+     */
+    public function get($name)
+    {
+        return $this->menus->get($name);
+    }
+
+    /**
      * Check if has menus.
      *
      * @return bool
@@ -77,5 +89,15 @@ class MenusManager implements Contracts\MenusManager
     public function isEmpty()
     {
         return $this->menus->isEmpty();
+    }
+
+    /**
+     * Get the menus count.
+     *
+     * @return int
+     */
+    public function count()
+    {
+        return $this->menus->count();
     }
 }
