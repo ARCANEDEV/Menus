@@ -1,6 +1,7 @@
 <?php namespace Arcanedev\Menus\Entities;
 
 use Closure;
+use IteratorAggregate;
 
 /**
  * Class     Menu
@@ -8,7 +9,7 @@ use Closure;
  * @package  Arcanedev\Menus\Entities
  * @author   ARCANEDEV <arcanedev.maroc@gmail.com>
  */
-class Menu
+class Menu implements IteratorAggregate
 {
     /* ------------------------------------------------------------------------------------------------
      |  Properties
@@ -41,6 +42,20 @@ class Menu
     {
         $this->name  = $name;
         $this->items = new MenuItemCollection;
+    }
+
+    /* ------------------------------------------------------------------------------------------------
+     |  Getters & Setters
+     | ------------------------------------------------------------------------------------------------
+     */
+    /**
+     * Get the menu items iterator.
+     *
+     * @return \Arcanedev\Menus\Entities\MenuItemCollection
+     */
+    public function getIterator()
+    {
+        return $this->items;
     }
 
     /* ------------------------------------------------------------------------------------------------
