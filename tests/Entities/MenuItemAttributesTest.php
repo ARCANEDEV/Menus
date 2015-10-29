@@ -1,21 +1,21 @@
 <?php namespace Arcanedev\Menus\Tests\Entities;
 
-use Arcanedev\Menus\Entities\MenuAttributes;
+use Arcanedev\Menus\Entities\MenuItemAttributes;
 use Arcanedev\Menus\Tests\TestCase;
 
 /**
- * Class     MenuAttributesTest
+ * Class     MenuItemAttributesTest
  *
  * @package  Arcanedev\Menus\Tests\Entities
  * @author   ARCANEDEV <arcanedev.maroc@gmail.com>
  */
-class MenuAttributesTest extends TestCase
+class MenuItemAttributesTest extends TestCase
 {
     /* ------------------------------------------------------------------------------------------------
      |  Properties
      | ------------------------------------------------------------------------------------------------
      */
-    /** @var MenuAttributes */
+    /** @var MenuItemAttributes */
     private $attributes;
 
     /* ------------------------------------------------------------------------------------------------
@@ -26,7 +26,7 @@ class MenuAttributesTest extends TestCase
     {
         parent::setUp();
 
-        $this->attributes = new MenuAttributes;
+        $this->attributes = new MenuItemAttributes;
     }
 
     public function tearDown()
@@ -46,39 +46,28 @@ class MenuAttributesTest extends TestCase
         $expectations = [
             \Illuminate\Support\Collection::class,
             \Arcanedev\Support\Collection::class,
-            \Arcanedev\Menus\Entities\MenuAttributes::class,
+            \Arcanedev\Menus\Entities\MenuItemAttributes::class,
         ];
 
         foreach ($expectations as $expected) {
             $this->assertInstanceOf($expected, $this->attributes);
         }
-
-        $this->assertTrue($this->attributes->isEmpty());
     }
 
     /** @test */
-    public function it_can_fill_the_fillable_properties()
+    public function it_can_render()
     {
-        $properties       = $this->getHomeProperties();
-        $this->attributes = new MenuAttributes($properties);
+        $this->attributes = MenuItemAttributes::make([
+            'id'    => 'id',
+            'name'  => 'name',
+            'class' => 'class other-class',
+            'null'  => null,
+            'required'
+        ]);
 
-        $this->assertCount(count($properties), $this->attributes);
+        $expected = 'id="id" name="name" class="class other-class" required="required"';
 
-        foreach ($properties as $name => $value) {
-            $this->assertTrue($this->attributes->has($name));
-            $this->assertEquals($value, $this->attributes->get($name));
-        }
-    }
-
-    /** @test */
-    public function it_can_ignore_other_properties()
-    {
-        $properties = [
-            'onClick' => 'alert("Hello world");'
-        ];
-
-        $this->attributes = new MenuAttributes($properties);
-
-        $this->assertTrue($this->attributes->isEmpty());
+        $this->assertEquals($expected, $this->attributes->render());
+        $this->assertEquals($expected, (string) $this->attributes);
     }
 }

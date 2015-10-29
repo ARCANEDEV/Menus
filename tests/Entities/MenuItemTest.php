@@ -12,183 +12,388 @@ use Arcanedev\Menus\Tests\TestCase;
 class MenuItemTest extends TestCase
 {
     /* ------------------------------------------------------------------------------------------------
-     |  Properties
-     | ------------------------------------------------------------------------------------------------
-     */
-    /** @var MenuItem */
-    private $menuItem;
-
-    /* ------------------------------------------------------------------------------------------------
-     |  Main Functions
-     | ------------------------------------------------------------------------------------------------
-     */
-    public function setUp()
-    {
-        parent::setUp();
-
-        $this->menuItem = new MenuItem;
-    }
-
-    public function tearDown()
-    {
-        parent::tearDown();
-
-        unset($this->menuItem);
-    }
-
-    /* ------------------------------------------------------------------------------------------------
      |  Test Functions
      | ------------------------------------------------------------------------------------------------
      */
     /** @test */
     public function it_can_be_instantiated()
     {
-        $this->assertInstanceOf(MenuItem::class, $this->menuItem);
-        $this->assertEmpty($this->menuItem->getProperties());
-        $this->assertCount(0, $this->menuItem->getChildren());
+        $item         = new MenuItem([]);
+        $expectations = [
+            \Arcanedev\Menus\Entities\MenuItem::class,
+        ];
+
+        foreach ($expectations as $expected) {
+            $this->assertInstanceOf($expected, $item);
+        }
+
+        $this->assertFalse($item->isRoot());
+        $this->assertEmpty($item->getUrl());
+        $this->assertEmpty($item->getIcon());
+        $this->assertEmpty($item->getContent());
+        $this->assertEmpty($item->attributes()->all());
+        $this->assertFalse($item->hasChildren());
+        $this->assertFalse($item->isActive());
+        $this->assertFalse($item->isDivider());
     }
 
     /** @test */
     public function it_can_make()
     {
-        $properties     = $this->getHomeProperties();
-        $this->menuItem = MenuItem::make($properties);
+        $item         = MenuItem::make([]);
+        $expectations = [
+            \Arcanedev\Menus\Entities\MenuItem::class,
+        ];
 
-        $this->assertInstanceOf(MenuItem::class, $this->menuItem);
-        $this->assertEquals($properties, $this->menuItem->getProperties());
+        foreach ($expectations as $expected) {
+            $this->assertInstanceOf($expected, $item);
+        }
 
-        $array = $this->menuItem->toArray();
-
-        $this->assertArrayHasKey('properties', $array);
-        $this->assertEquals($properties, $array['properties']);
-
-        $this->assertArrayHasKey('attributes', $array);
-        $this->assertEquals(array_except($properties, ['active', 'icon']), $array['attributes']);
-
-        $this->assertArrayHasKey('sub-items', $array);
-        $this->assertEmpty($array['sub-items']);
+        $this->assertFalse($item->isRoot());
+        $this->assertEmpty($item->getUrl());
+        $this->assertEmpty($item->getIcon());
+        $this->assertEmpty($item->getContent());
+        $this->assertEmpty($item->attributes()->all());
+        $this->assertFalse($item->hasChildren());
+        $this->assertFalse($item->isActive());
+        $this->assertFalse($item->isDivider());
     }
 
     /** @test */
-    public function it_can_access_menu_item_attributes()
+    public function it_can_make_root_item()
     {
-        $properties     = $this->getHomeProperties();
-        $this->menuItem = MenuItem::make($properties);
+        $item = MenuItem::make([
+            'root' => true,
+        ]);
 
-        foreach ($properties as $name => $value) {
-            $this->assertEquals($value, $this->menuItem->{$name});
+        $this->assertTrue($item->isRoot());
+        $this->assertEmpty($item->getUrl());
+        $this->assertEmpty($item->getIcon());
+        $this->assertEmpty($item->getContent());
+        $this->assertEmpty($item->attributes()->all());
+        $this->assertFalse($item->hasChildren());
+        $this->assertFalse($item->isActive());
+        $this->assertFalse($item->isDivider());
+    }
+
+    /** @test */
+    public function it_can_fill_item_properties()
+    {
+        $item = MenuItem::make([]);
+
+        $this->assertFalse($item->isRoot());
+        $this->assertEmpty($item->getUrl());
+        $this->assertEmpty($item->getIcon());
+        $this->assertEmpty($item->attributes()->all());
+        $this->assertFalse($item->hasChildren());
+        $this->assertFalse($item->isActive());
+        $this->assertFalse($item->isDivider());
+
+        $item->fill([
+            'root'       => true,
+            'url'        => $this->baseUrl,
+            'icon'       => 'fa fa-home',
+            'content'    => 'Home',
+            'active'     => true,
+            'attributes' => [
+                'class'  => 'nav-link',
+                'style'  => 'color: green; background: red;' // If you know what i mean.
+            ]
+        ]);
+
+        $this->assertTrue($item->isRoot());
+        $this->assertEquals($this->baseUrl, $item->getUrl());
+        $this->assertNotEmpty($item->getIcon());
+        $this->assertNotEmpty($item->getContent());
+        $this->assertNotEmpty($item->attributes()->all());
+        $this->assertFalse($item->hasChildren());
+        $this->assertTrue($item->isActive());
+        $this->assertFalse($item->isDivider());
+    }
+
+    /** @test */
+    public function it_can_make_url_item()
+    {
+        $urls = [
+            $this->baseUrl,
+            $this->baseUrl . '/about',
+            $this->baseUrl . '/contact',
+            $this->baseUrl . '/categories/category-1',
+        ];
+
+        foreach ($urls as $url) {
+            $item = MenuItem::make(compact('url'));
+
+            $this->assertEquals($url, $item->getUrl());
+            $this->assertEmpty($item->getIcon());
+            $this->assertEmpty($item->getContent());
+            $this->assertEmpty($item->attributes()->all());
+            $this->assertFalse($item->hasChildren());
+            $this->assertFalse($item->isActive());
+            $this->assertFalse($item->isDivider());
         }
     }
 
     /** @test */
-    public function it_can_add_a_sub_item()
+    public function it_can_make_route_item()
     {
-        $this->menuItem->add([
-            'url'   => 'about',
-            'title' => 'About',
-        ]);
+        $routes = [
+            [
+                'expected' => $this->baseUrl,
+                'route'    => 'public::home',
+                'params'   => []
+            ],[
+                'expected' => $this->baseUrl . '/about/us',
+                'route'    => 'public::about',
+                'params'   => ['us']
+            ],[
+                'expected' => $this->baseUrl . '/contact',
+                'route'    => 'public::contact',
+                'params'   => []
+            ]
+        ];
 
-        $this->assertCount(1, $this->menuItem->getChildren());
+        foreach ($routes as $route) {
+            $expected = $route['expected'];
+            $route    = [$route['route'], $route['params']];
+            $item     = MenuItem::make(compact('route'));
 
-        $this->menuItem->add([
-            'url'   => 'contact',
-            'title' => 'Contact us',
-        ]);
-
-        $this->assertCount(2, $this->menuItem->getChildren());
+            $this->assertEquals($expected, $item->getUrl());
+            $this->assertEmpty($item->getIcon());
+            $this->assertEmpty($item->getContent());
+            $this->assertEmpty($item->attributes()->all());
+            $this->assertFalse($item->hasChildren());
+            $this->assertFalse($item->isActive());
+            $this->assertFalse($item->isDivider());
+        }
     }
 
     /** @test */
-    public function it_can_add_a_sub_item_by_child_method()
+    public function it_can_make_action_item()
     {
-        $this->menuItem->child([
-            'url'   => 'about',
-            'title' => 'About',
-        ]);
+        $controller = 'Arcanedev\\Menus\\Tests\\Stubs\\PagesController';
+        $actions   = [
+            [
+                'expected' => $this->baseUrl,
+                'action'   => $controller . '@index',
+                'params'   => []
+            ],[
+                'expected' => $this->baseUrl . '/about/us',
+                'action'   => $controller . '@about',
+                'params'   => ['us']
+            ],[
+                'expected' => $this->baseUrl . '/contact',
+                'action'   => $controller . '@contact',
+                'params'   => []
+            ]
+        ];
 
-        $this->assertCount(1, $this->menuItem->getChildren());
+        foreach ($actions as $action) {
+            $expected = $action['expected'];
+            $action   = [$action['action'], $action['params']];
+            $item     = MenuItem::make(compact('action'));
 
-        $this->menuItem->child([
-            'url'   => 'contact',
-            'title' => 'Contact us',
-        ]);
-
-        $this->assertCount(2, $this->menuItem->getChildren());
+            $this->assertEquals($expected, $item->getUrl());
+            $this->assertEmpty($item->getIcon());
+            $this->assertEmpty($item->getContent());
+            $this->assertEmpty($item->attributes()->all());
+            $this->assertFalse($item->hasChildren());
+            $this->assertFalse($item->isActive());
+            $this->assertFalse($item->isDivider());
+        }
     }
 
     /** @test */
-    public function it_can_add_a_sub_item_by_route()
+    public function it_can_make_item_with_icon()
     {
-        $this->menuItem->route('public::about', 'About');
+        $url     = $this->baseUrl;
+        $icon    = 'fa fa-home';
+        $content = 'Home';
+        $item    = MenuItem::make(compact('url', 'icon', 'content'));
 
-        $this->assertCount(1, $this->menuItem->getChildren());
-
-        $this->menuItem->route('public::contact', 'Contact us');
-
-        $this->assertCount(2, $this->menuItem->getChildren());
+        $this->assertEquals($url, $item->getUrl());
+        $this->assertEquals('<i class="' . $icon . '"></i>', $item->getIcon());
+        $this->assertEquals($content, $item->getContent());
+        $this->assertEmpty($item->attributes()->all());
+        $this->assertFalse($item->hasChildren());
+        $this->assertFalse($item->isActive());
+        $this->assertFalse($item->isDivider());
     }
 
     /** @test */
-    public function it_can_add_a_sub_item_by_url()
+    public function it_can_make_item_with_attributes()
     {
-        $this->menuItem->url('about', 'About');
+        $url        = $this->baseUrl;
+        $content    = 'Home';
+        $attributes = [
+            'class'   => 'nav-link'
+        ];
 
-        $this->assertCount(1, $this->menuItem->getChildren());
+        $item = MenuItem::make(compact('url', 'content', 'attributes'));
 
-        $this->menuItem->url('contact', 'Contact us');
-
-        $this->assertCount(2, $this->menuItem->getChildren());
+        $this->assertEquals($url, $item->getUrl());
+        $this->assertEquals($content, $item->getContent());
+        $this->assertEquals($attributes, $item->attributes()->all());
+        $this->assertFalse($item->hasChildren());
+        $this->assertFalse($item->isActive());
+        $this->assertFalse($item->isDivider());
     }
 
     /** @test */
-    public function it_can_add_a_sub_item_by_dropdown()
+    public function it_can_make_item_add_children()
     {
-        $this->menuItem->dropdown('Services', 1, function (MenuItem $item) {
-            $item->url('service-1', 'Service 1');
-            $item->url('service-2', 'Service 2');
-            $item->url('service-3', 'Service 3');
+        $item = MenuItem::make([
+            'root'    => true,
+            'url'     => $this->baseUrl,
+            'content' => 'Home',
+            'active'  => true,
+        ], function (MenuItem $subItem) {
+            $subItem->add([
+                'url'     => $this->baseUrl . '/about/us',
+                'content' => 'About us',
+            ]);
+            $subItem->add([
+                'url'     => $this->baseUrl . '/contact',
+                'content' => 'Contact',
+            ]);
         });
 
-        $children = $this->menuItem->getChildren();
-
-        $this->assertCount(1, $children);
-
-        $dropdown = $children->first();
-
-        $this->assertCount(3, $dropdown->getChildren());
+        $this->assertTrue($item->hasChildren());
+        $this->assertCount(2, $item->children());
+        $this->assertEmpty($item->attributes()->all());
+        $this->assertTrue($item->isActive());
+        $this->assertFalse($item->isDivider());
     }
 
     /** @test */
-    public function it_can_add_header_sub_item()
+    public function it_can_make_url_item_with_children()
     {
-        $title  = 'Header item';
-        $this->menuItem->addHeader($title);
-        $header = $this->menuItem->getChildren()->get(0);
+        $item = MenuItem::make([
+            'root'    => true,
+            'url'     => $this->baseUrl,
+            'content' => 'Home',
+            'active'  => true,
+        ], function (MenuItem $subItem) {
+            $subItem->url($this->baseUrl . '/about/us', 'About us');
+            $subItem->url($this->baseUrl . '/contact', 'Contact');
+        });
 
-        $this->assertEquals('header', $header->name);
-        $this->assertEquals($title,   $header->title);
-
-        $title  = 'Second header';
-        $this->menuItem->header($title);
-        $header = $this->menuItem->getChildren()->get(1);
-
-        $this->assertEquals('header', $header->name);
-        $this->assertEquals($title,   $header->title);
+        $this->assertTrue($item->hasChildren());
+        $this->assertCount(2, $item->children());
+        $this->assertEmpty($item->attributes()->all());
+        $this->assertTrue($item->isActive());
+        $this->assertFalse($item->isDivider());
     }
 
     /** @test */
-    public function it_can_add_divider_sub_item()
+    public function it_can_make_route_item_with_children()
     {
-        $this->menuItem->addDivider();
+        $item = MenuItem::make([
+            'root'    => true,
+            'route'   => 'public::home',
+            'content' => 'Home',
+        ], function (MenuItem $subItem) {
+            $subItem->route('public::about', 'About us', ['slug' => 'us']);
+            $subItem->route('public::contact', 'Contact');
+        });
 
-        $divider = $this->menuItem->getChildren()->get(0);
+        $this->assertTrue($item->hasChildren());
+        $this->assertCount(2, $item->children());
+        $this->assertEmpty($item->attributes()->all());
+        $this->assertFalse($item->isActive());
+        $this->assertFalse($item->isDivider());
+    }
 
-        $this->assertEquals('divider', $divider->name);
+    /** @test */
+    public function it_can_make_action_item_with_children()
+    {
+        $controller = 'Arcanedev\\Menus\\Tests\\Stubs\\PagesController';
 
-        $this->menuItem->divider();
+        $item = MenuItem::make([
+            'root'    => true,
+            'action'  => [$controller . '@index'],
+            'content' => 'Home',
+        ], function (MenuItem $subItem) use ($controller) {
+            $subItem->action($controller . '@about', 'About us', ['slug' => 'us']);
+            $subItem->action($controller . '@contact', 'Contact');
+        });
 
-        $divider = $this->menuItem->getChildren()->get(1);
+        $this->assertTrue($item->hasChildren());
+        $this->assertCount(2, $item->children());
+        $this->assertEmpty($item->attributes()->all());
+        $this->assertFalse($item->isActive());
+        $this->assertFalse($item->isDivider());
+    }
 
-        $this->assertEquals('divider', $divider->name);
+    /** @test */
+    public function it_cant_get_url_from_route_item_with_children()
+    {
+        $item = MenuItem::make([
+            'root'    => true,
+            'route'   => 'public::home',
+            'content' => 'Home',
+        ], function (MenuItem $subItem) {
+            $subItem->route('public::about', 'About us', ['slug' => 'us']);
+            $subItem->route('public::contact', 'Contact');
+        });
+
+        $this->assertEquals('#', $item->getUrl());
+        $this->assertFalse($item->isActive());
+        $this->assertFalse($item->isDivider());
+    }
+
+    /** @test */
+    public function it_can_make_divider_item()
+    {
+        $item = MenuItem::make(['type' => 'divider']);
+
+        $this->assertTrue($item->isDivider());
+        $this->assertFalse($item->isActive());
+    }
+
+    /** @test */
+    public function it_cant_make_divider_between_children()
+    {
+        $item = MenuItem::make([
+            'root'    => true,
+            'route'   => 'public::home',
+            'content' => 'Home',
+        ], function (MenuItem $subItem) {
+            $subItem->route('public::about', 'About us', ['slug' => 'us']);
+            $subItem->route('public::about', 'ARCANEDEV', ['slug' => 'arcanedev']);
+            $subItem->divider();
+            $subItem->route('public::contact', 'Contact');
+        });
+
+        $this->assertEquals('#', $item->getUrl());
+        $this->assertFalse($item->isDivider());
+
+        $divider = $item->children()->get(2);
+        $this->assertTrue($divider->isDivider());
+    }
+
+    /** @test */
+    public function it_cant_make_header_between_children()
+    {
+        $item = MenuItem::make([
+            'root'    => true,
+            'route'   => 'public::home',
+            'content' => 'Home',
+        ], function (MenuItem $subItem) {
+            $subItem->header('ARCANEDEV');
+            $subItem->route('public::about', 'About us', ['slug' => 'us']);
+            $subItem->route('public::about', 'ARCANEDEV', ['slug' => 'arcanedev']);
+            $subItem->header('Other');
+            $subItem->route('public::contact', 'Contact');
+        });
+
+        $this->assertEquals('#', $item->getUrl());
+        $this->assertFalse($item->isDivider());
+
+        $header = $item->children()->get(0);
+        $this->assertTrue($header->isHeader());
+
+        $header = $item->children()->get(3);
+        $this->assertTrue($header->isHeader());
     }
 }

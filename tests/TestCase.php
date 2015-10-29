@@ -1,5 +1,6 @@
 <?php namespace Arcanedev\Menus\Tests;
 
+use Illuminate\Routing\Router;
 use Orchestra\Testbench\TestCase as BaseTestCase;
 
 /**
@@ -17,6 +18,8 @@ abstract class TestCase extends BaseTestCase
     public function setUp()
     {
         parent::setUp();
+
+        $this->app->loadDeferredProviders();
     }
 
     public function tearDown()
@@ -38,7 +41,7 @@ abstract class TestCase extends BaseTestCase
     protected function getPackageProviders($app)
     {
         return [
-            \Arcanedev\Menus\MenuServiceProvider::class,
+            \Arcanedev\Menus\MenusServiceProvider::class,
         ];
     }
 
@@ -63,30 +66,53 @@ abstract class TestCase extends BaseTestCase
      */
     protected function getEnvironmentSetUp($app)
     {
-        //
+        $this->registerRoutes($app);
     }
 
-    /* ------------------------------------------------------------------------------------------------
-     |  Other Functions
-     | ------------------------------------------------------------------------------------------------
-     */
     /**
-     * Get home item properties.
+     * Register routes for tests.
      *
-     * @return array
+     * @param  \Illuminate\Foundation\Application   $app
      */
-    protected function getHomeProperties()
+    private function registerRoutes($app)
     {
-        return [
-            'url'        => $this->baseUrl,
-            'route'      => 'public::home',
-            'title'      => 'Home',
-            'name'       => 'public::home',
-            'icon'       => 'fa fa-fw fa-home',
-            'parent'     => null,
-            'attributes' => ['color' => 'menu-item'],
-            'active'     => true,
-            'order'      => 1,
-        ];
+        /** @var Router $router */
+        $router = $app['router'];
+
+        $router->group([
+            'as'        => 'public::',
+            'namespace' => 'Arcanedev\\Menus\\Tests\\Stubs',
+        ], function (Router $router) {
+            $router->get('/', [
+                'as'   => 'home',
+                'uses' => 'PagesController@index',
+            ]);
+
+            $router->get('about/{slug}', [
+                'as'   => 'about',
+                'uses' => 'PagesController@about',
+            ]);
+
+            $router->group(['prefix' => 'categories'], function (Router $router) {
+                $router->get('{category_slug}', [
+                    'as'   => 'category.show',
+                    'uses' => 'PagesController@category',
+                ]);
+
+                $router->group([
+                    'prefix' => '{category_slug}/sub-categories'
+                ], function (Router $router) {
+                    $router->get('{sub_category_slug}', [
+                        'as'   => 'public::category.sub.show',
+                        'uses' => 'PagesController@subCategory',
+                    ]);
+                });
+            });
+
+            $router->get('contact', [
+                'as'   => 'contact',
+                'uses' => 'PagesController@contact',
+            ]);
+        });
     }
 }

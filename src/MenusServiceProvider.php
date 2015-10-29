@@ -3,12 +3,12 @@
 use Arcanedev\Support\PackageServiceProvider;
 
 /**
- * Class     MenuServiceProvider
+ * Class     MenusServiceProvider
  *
  * @package  Arcanedev\Menus
  * @author   ARCANEDEV <arcanedev.maroc@gmail.com>
  */
-class MenuServiceProvider extends PackageServiceProvider
+class MenusServiceProvider extends PackageServiceProvider
 {
     /* ------------------------------------------------------------------------------------------------
      |  Properties
@@ -27,6 +27,13 @@ class MenuServiceProvider extends PackageServiceProvider
      * @var string
      */
     protected $package = 'menus';
+
+    /**
+     * Indicates if loading of the provider is deferred.
+     *
+     * @var bool
+     */
+    protected $defer   = true;
 
     /* ------------------------------------------------------------------------------------------------
      |  Getters & Setters
@@ -52,6 +59,8 @@ class MenuServiceProvider extends PackageServiceProvider
     public function register()
     {
         $this->registerConfig();
+
+        $this->registerMenuManagerService();
     }
 
     /**
@@ -74,7 +83,27 @@ class MenuServiceProvider extends PackageServiceProvider
     public function provides()
     {
         return [
-            //
+            'arcanedev.menus.manager',
+            \Arcanedev\Menus\Contracts\MenusManager::class,
         ];
+    }
+
+    /* ------------------------------------------------------------------------------------------------
+     |  Services Functions
+     | ------------------------------------------------------------------------------------------------
+     */
+    /**
+     * Register the MenusManager service.
+     */
+    private function registerMenuManagerService()
+    {
+        $this->singleton('arcanedev.menus.manager', function () {
+            return new MenusManager;
+        });
+
+        $this->app->bind(
+            \Arcanedev\Menus\Contracts\MenusManager::class,
+            \Arcanedev\Menus\MenusManager::class
+        );
     }
 }
