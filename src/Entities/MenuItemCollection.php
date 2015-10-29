@@ -24,6 +24,6 @@ class MenuItemCollection extends Collection
      */
     public function get($key, $default = null)
     {
-        return parent::get($key, $default = null);
+        return parent::get($key, $default);
     }
 }
