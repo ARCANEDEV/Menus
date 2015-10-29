@@ -79,4 +79,19 @@ class MenuTest extends TestCase
             $this->assertFalse($item->hasChildren());
         }
     }
+
+    /** @test */
+    public function it_can_iterate_items()
+    {
+        $menu = Menu::make('main');
+        $this->populateMenu($menu);
+
+        $this->assertTrue($menu->hasItems());
+
+        foreach ($menu as $item) {
+            /** @var  MenuItem  $item */
+            $this->assertInstanceOf(MenuItem::class, $item);
+            $this->assertTrue($item->isRoot());
+        }
+    }
 }

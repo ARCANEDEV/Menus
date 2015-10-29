@@ -1,6 +1,6 @@
 <?php namespace Arcanedev\Menus\Tests;
+
 use Arcanedev\Menus\Entities\Menu;
-use Arcanedev\Menus\Entities\MenuItem;
 use Arcanedev\Menus\MenusManager;
 
 /**
@@ -63,38 +63,43 @@ class MenuManagerTest extends TestCase
     }
 
     /** @test */
+    public function it_can_add_multiple_menus()
+    {
+        $this->assertFalse($this->manager->hasMenus());
+
+        $this->manager->make('main', function (Menu $menu) {});
+
+        $this->assertTrue($this->manager->hasMenus());
+        $this->assertEquals(1, $this->manager->count());
+
+        $this->manager->make('auth', function (Menu $menu) {});
+
+        $this->assertTrue($this->manager->hasMenus());
+        $this->assertEquals(2, $this->manager->count());
+    }
+
+    /** @test */
     public function it_can_make_menu()
     {
-        $this->manager->make('public', function (Menu $menu) {
-            $menu->url($this->baseUrl, 'Home', ['class' => 'nav-link']);
-            $menu->route('public::about', 'About', ['slug' => 'about-us'], ['class' => 'nav-link']);
-            $menu->action('ContactController@getForm', 'Contact', ['slug' => 'contact-us'], ['class' => 'nav-link']);
-            $menu->divider();
-            $menu->header('This is a header');
-            $menu->dropdown('Categories', function (MenuItem $item) {
-                $item->url($this->baseUrl . '/categories/category-1', 'Category 1', ['class' => 'nav-link']);
-                $item->route('public::category.show', 'Category 2', ['category-2'], ['class' => 'nav-link']);
-                $item->action('CategoriesController@show', 'Category 3', ['category-3'], ['class' => 'nav-link']);
-                $item->add([
-                    'url'        => $this->baseUrl . '/categories/category-4',
-                    'content'    => 'Category 4',
-                    'attributes' => ['class' => 'nav-link'],
-                ]);
-                $item->divider();
-                $item->header('This is a header');
-                $item->dropdown('Sub-categories', function (MenuItem $item) {
-                    $item->url($this->baseUrl . '/categories/category-1/sub-categories/sub-category-1', 'Sub-Category 1', ['class' => 'nav-link']);
-                    $item->route('public::category.sub.show', 'Sub-Category 2', ['category-1', 'sub-category-2'], ['class' => 'nav-link']);
-                    $item->action('CategoriesController@showSub', 'Sub-Category 3', ['category-1', 'sub-category-3'], ['class' => 'nav-link']);
-                    $item->add([
-                        'url'        => $this->baseUrl . '/categories/category-1/sub-categories/sub-category-4',
-                        'content'    => 'Sub-Category 4',
-                        'attributes' => ['class' => 'nav-link'],
-                    ]);
-                });
-            });
+        $this->manager->make('main', function (Menu $menu) {
+            $this->populateMenu($menu);
         });
 
         $this->assertTrue($this->manager->hasMenus());
+    }
+
+    /** @test */
+    public function it_can_get_a_menu()
+    {
+        $this->manager->make('main', function (Menu $menu) {
+            $this->populateMenu($menu);
+        });
+
+        $this->assertTrue($this->manager->hasMenus());
+        $this->assertEquals(1, $this->manager->count());
+
+        $menu = $this->manager->get('main');
+
+        $this->assertInstanceOf(\Arcanedev\Menus\Entities\Menu::class, $menu);
     }
 }

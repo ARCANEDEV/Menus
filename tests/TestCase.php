@@ -1,5 +1,7 @@
 <?php namespace Arcanedev\Menus\Tests;
 
+use Arcanedev\Menus\Entities\Menu;
+use Arcanedev\Menus\Entities\MenuItem;
 use Illuminate\Routing\Router;
 use Orchestra\Testbench\TestCase as BaseTestCase;
 
@@ -69,6 +71,10 @@ abstract class TestCase extends BaseTestCase
         $this->registerRoutes($app);
     }
 
+    /* ------------------------------------------------------------------------------------------------
+     |  Other Functions
+     | ------------------------------------------------------------------------------------------------
+     */
     /**
      * Register routes for tests.
      *
@@ -114,5 +120,45 @@ abstract class TestCase extends BaseTestCase
                 'uses' => 'PagesController@contact',
             ]);
         });
+    }
+
+    /**
+     * Make a main menu for tests.
+     *
+     * @param  Menu  $menu
+     *
+     * @return Menu
+     */
+    protected function populateMenu(Menu $menu)
+    {
+        $menu->url($this->baseUrl, 'Home', ['class' => 'nav-link']);
+        $menu->route('public::about', 'About', ['slug' => 'about-us'], ['class' => 'nav-link']);
+        $menu->action('ContactController@getForm', 'Contact', ['slug' => 'contact-us'], ['class' => 'nav-link']);
+        $menu->divider();
+        $menu->header('This is a header');
+        $menu->dropdown('Categories', function (MenuItem $item) {
+            $item->url($this->baseUrl . '/categories/category-1', 'Category 1', ['class' => 'nav-link']);
+            $item->route('public::category.show', 'Category 2', ['category-2'], ['class' => 'nav-link']);
+            $item->action('CategoriesController@show', 'Category 3', ['category-3'], ['class' => 'nav-link']);
+            $item->add([
+                'url'        => $this->baseUrl . '/categories/category-4',
+                'content'    => 'Category 4',
+                'attributes' => ['class' => 'nav-link'],
+            ]);
+            $item->divider();
+            $item->header('This is a header');
+            $item->dropdown('Sub-categories', function (MenuItem $item) {
+                $item->url($this->baseUrl . '/categories/category-1/sub-categories/sub-category-1', 'Sub-Category 1', ['class' => 'nav-link']);
+                $item->route('public::category.sub.show', 'Sub-Category 2', ['category-1', 'sub-category-2'], ['class' => 'nav-link']);
+                $item->action('CategoriesController@showSub', 'Sub-Category 3', ['category-1', 'sub-category-3'], ['class' => 'nav-link']);
+                $item->add([
+                    'url'        => $this->baseUrl . '/categories/category-1/sub-categories/sub-category-4',
+                    'content'    => 'Sub-Category 4',
+                    'attributes' => ['class' => 'nav-link'],
+                ]);
+            });
+        });
+
+        return $menu;
     }
 }
