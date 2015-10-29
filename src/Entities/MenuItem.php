@@ -342,13 +342,23 @@ class MenuItem implements MenuItemInterface
     }
 
     /**
+     * Check if the menu item is a dropdown item.
+     *
+     * @return bool
+     */
+    public function isDropdown()
+    {
+        return $this->isType('dropdown') || $this->hasChildren();
+    }
+
+    /**
      * Check if the menu item is a header.
      *
      * @return bool
      */
     public function isHeader()
     {
-        return $this->type === 'header';
+        return $this->isType('header');
     }
 
     /**
@@ -358,7 +368,7 @@ class MenuItem implements MenuItemInterface
      */
     public function isDivider()
     {
-        return $this->type === 'divider';
+        return $this->isType('divider');
     }
 
     /**
@@ -379,6 +389,18 @@ class MenuItem implements MenuItemInterface
     public function hasChildren()
     {
         return ! $this->children()->isEmpty();
+    }
+
+    /**
+     * Check the menu item type.
+     *
+     * @param  string  $type
+     *
+     * @return bool
+     */
+    private function isType($type)
+    {
+        return $this->type === $type;
     }
 
     /* ------------------------------------------------------------------------------------------------
