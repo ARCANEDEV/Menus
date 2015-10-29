@@ -10,5 +10,20 @@ use Arcanedev\Support\Collection;
  */
 class MenuCollection extends Collection
 {
-    //
+    /* ------------------------------------------------------------------------------------------------
+     |  Main Functions
+     | ------------------------------------------------------------------------------------------------
+     */
+    /**
+     * Get a menu from collection.
+     *
+     * @param  string      $name
+     * @param  mixed|null  $default
+     *
+     * @return Menu|null
+     */
+    public function get($name, $default = null)
+    {
+        return parent::get($name, $default);
+    }
 }
