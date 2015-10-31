@@ -49,7 +49,6 @@ Feel free to check out the [releases](https://github.com/ARCANEDEV/Menus/release
 
   - [ ] Complete the documentation.
   - [ ] Test Laravel 5.0 support.
-  - [ ] Framework agnostic package.
 
 ## DONE
 
