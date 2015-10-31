@@ -352,7 +352,7 @@ class MenuItemTest extends TestCase
     }
 
     /** @test */
-    public function it_cant_make_divider_between_children()
+    public function it_can_make_divider_between_children()
     {
         $item = MenuItem::make([
             'root'    => true,
@@ -373,7 +373,7 @@ class MenuItemTest extends TestCase
     }
 
     /** @test */
-    public function it_cant_make_header_between_children()
+    public function it_can_make_header_between_children()
     {
         $item = MenuItem::make([
             'root'    => true,
@@ -395,5 +395,28 @@ class MenuItemTest extends TestCase
 
         $header = $item->children()->get(3);
         $this->assertTrue($header->isHeader());
+    }
+
+    /** @test */
+    public function it_can_make_dropdown_menu_item()
+    {
+        $item = MenuItem::make([
+            'root'    => true,
+            'route'   => 'public::home',
+            'content' => 'Home',
+        ], function (MenuItem $subItem) {
+            $subItem->dropdown('Categories', function (MenuItem $dropdown) {
+                $dropdown->route('public::category.show', 'Category 1', ['category-1']);
+                $dropdown->route('public::category.show', 'Category 2', ['category-2']);
+                $dropdown->route('public::category.show', 'Category 3', ['category-3']);
+            });
+        });
+
+        $this->assertCount(1, $item->children());
+
+        $dropdown = $item->children()->first();
+
+        $this->assertTrue($dropdown->isDropdown());
+        $this->assertCount(3, $dropdown->children());
     }
 }
