@@ -154,25 +154,13 @@ class MenuItem implements MenuItemInterface
      */
     public function getUrl()
     {
-        if ($this->hasChildren()) {
-            return '#';
+        $url = '#';
+
+        if ( ! $this->hasChildren()) {
+            $url = $this->dispatchUrl($url);
         }
 
-        switch ($this->type) {
-            case 'url':
-                return $this->getProperty('url');
-
-            case 'route':
-                list($route, $parameters) = $this->getProperty('route');
-                return route($route, $parameters);
-
-            case 'action':
-                list($action, $parameters) = $this->getProperty('action');
-                return action($action, $parameters);
-
-            default:
-                return '';
-        }
+        return $url;
     }
 
     /**
@@ -432,10 +420,42 @@ class MenuItem implements MenuItemInterface
      * Add a child item to collection.
      *
      * @param  self  $item
+     *
+     * @return \Arcanedev\Menus\Entities\MenuItem
      */
     private function addChild(MenuItem $item)
     {
         $this->children->push($item);
+
+        return $this;
+    }
+
+    /**
+     * Dispatch menu item url.
+     *
+     * @param  string  $default
+     *
+     * @return string
+     */
+    private function dispatchUrl($default = '#')
+    {
+        if ($this->isType('url')) {
+            return $this->getProperty('url');
+        }
+
+        if ($this->isType('route')) {
+            list($route, $parameters) = $this->getProperty('route');
+
+            return route($route, $parameters);
+        }
+
+        if ($this->isType('action')) {
+            list($action, $parameters) = $this->getProperty('action');
+
+            return action($action, $parameters);
+        }
+
+        return $default;
     }
 
     /**

@@ -28,7 +28,7 @@ class MenuItemTest extends TestCase
         }
 
         $this->assertFalse($item->isRoot());
-        $this->assertEmpty($item->getUrl());
+        $this->assertEquals('#', $item->getUrl());
         $this->assertEmpty($item->getIcon());
         $this->assertEmpty($item->getContent());
         $this->assertEmpty($item->attributes()->all());
@@ -50,7 +50,7 @@ class MenuItemTest extends TestCase
         }
 
         $this->assertFalse($item->isRoot());
-        $this->assertEmpty($item->getUrl());
+        $this->assertEquals('#', $item->getUrl());
         $this->assertEmpty($item->getIcon());
         $this->assertEmpty($item->getContent());
         $this->assertEmpty($item->attributes()->all());
@@ -67,7 +67,7 @@ class MenuItemTest extends TestCase
         ]);
 
         $this->assertTrue($item->isRoot());
-        $this->assertEmpty($item->getUrl());
+        $this->assertEquals('#', $item->getUrl());
         $this->assertEmpty($item->getIcon());
         $this->assertEmpty($item->getContent());
         $this->assertEmpty($item->attributes()->all());
@@ -82,7 +82,7 @@ class MenuItemTest extends TestCase
         $item = MenuItem::make([]);
 
         $this->assertFalse($item->isRoot());
-        $this->assertEmpty($item->getUrl());
+        $this->assertEquals('#', $item->getUrl());
         $this->assertEmpty($item->getIcon());
         $this->assertEmpty($item->attributes()->all());
         $this->assertFalse($item->hasChildren());
@@ -398,25 +398,35 @@ class MenuItemTest extends TestCase
     }
 
     /** @test */
-    public function it_can_make_dropdown_menu_item()
+    public function it_can_make_dropdown_menu_items()
     {
         $item = MenuItem::make([
             'root'    => true,
             'route'   => 'public::home',
             'content' => 'Home',
         ], function (MenuItem $subItem) {
-            $subItem->dropdown('Categories', function (MenuItem $dropdown) {
-                $dropdown->route('public::category.show', 'Category 1', ['category-1']);
-                $dropdown->route('public::category.show', 'Category 2', ['category-2']);
-                $dropdown->route('public::category.show', 'Category 3', ['category-3']);
+            $subItem->dropdown('Category 1', function (MenuItem $dropdown) {
+                $dropdown->route('public::category.show', 'Sub-Category 1-1', ['category-1-1']);
+                $dropdown->route('public::category.show', 'Sub-Category 1-2', ['category-1-2']);
+                $dropdown->route('public::category.show', 'Sub-Category 1-3', ['category-1-3']);
+            });
+
+            $subItem->dropdown('Category 2', function (MenuItem $dropdown) {
+                $dropdown->route('public::category.show', 'Sub-Category 2-1', ['category-2-1']);
+                $dropdown->route('public::category.show', 'Sub-Category 2-2', ['category-2-2']);
             });
         });
 
-        $this->assertCount(1, $item->children());
+        $this->assertCount(2, $item->children());
 
         $dropdown = $item->children()->first();
 
         $this->assertTrue($dropdown->isDropdown());
         $this->assertCount(3, $dropdown->children());
+
+        $dropdown = $item->children()->last();
+
+        $this->assertTrue($dropdown->isDropdown());
+        $this->assertCount(2, $dropdown->children());
     }
 }
