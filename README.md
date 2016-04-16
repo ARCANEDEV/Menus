@@ -13,7 +13,7 @@
 
 *By [ARCANEDEV&copy;](http://www.arcanedev.net/)*
 
-Menu builder for Laravel 5.
+Menu builder for Laravel `5.1` & `5.2`.
 
 Feel free to check out the [releases](https://github.com/ARCANEDEV/Menus/releases), [license](LICENSE.md), and [contribution guidelines](CONTRIBUTING.md).
 
@@ -34,12 +34,11 @@ Feel free to check out the [releases](https://github.com/ARCANEDEV/Menus/release
 ## DONE
 
   - [x] Laravel 5.1 supported.
+  - [x] Laravel 5.2 supported.
 
 ## TODOS
 
   - [ ] Complete the documentation.
-  - [ ] Adding Laravel 5.0 support.
-  - [ ] Adding Laravel 5.2 support.
 
 ## Contribution
 
