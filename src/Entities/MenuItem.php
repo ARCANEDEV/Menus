@@ -61,7 +61,7 @@ class MenuItem implements MenuItemInterface
      */
     public function __construct(array $properties)
     {
-        $this->children   = new MenuItemCollection;
+        $this->children = new MenuItemCollection;
         $this->setProperties($properties);
     }
 
@@ -73,26 +73,32 @@ class MenuItem implements MenuItemInterface
      * Set the menu item type.
      *
      * @param  array  $properties
+     *
+     * @return self
      */
     private function setType(array &$properties)
     {
         $type = array_pull($properties, 'type', null);
 
-        if (is_null($type)) {
-            $type = $this->guessType($properties);
-        }
+        $this->type = is_null($type)
+            ? $this->guessType($properties)
+            : $type;
 
-        $this->type = $type;
+        return $this;
     }
 
     /**
      * Set the menu item root status.
      *
      * @param  array  $properties
+     *
+     * @return self
      */
     private function setRoot(array &$properties)
     {
         $this->root = array_pull($properties, 'root', false);
+
+        return $this;
     }
 
     /**
@@ -154,13 +160,7 @@ class MenuItem implements MenuItemInterface
      */
     public function getUrl()
     {
-        $url = '#';
-
-        if ( ! $this->hasChildren()) {
-            $url = $this->dispatchUrl($url);
-        }
-
-        return $url;
+        return $this->hasChildren() ? '#' : $this->dispatchUrl();
     }
 
     /**
@@ -174,15 +174,9 @@ class MenuItem implements MenuItemInterface
     {
         $icon = array_get($this->properties, 'icon', null);
 
-        if (is_null($icon)) {
-            return '';
-        }
+        if (is_null($icon)) return '';
 
-        $attributes = MenuItemAttributes::make([
-            'class' => $icon
-        ]);
-
-        return "<$tag " . $attributes . "></$tag>";
+        return "<$tag " . MenuItemAttributes::make(['class' => $icon])->render() . "></$tag>";
     }
 
     /**
@@ -406,11 +400,8 @@ class MenuItem implements MenuItemInterface
      */
     private function makeSubItem($type, array $properties = [], Closure $callback = null)
     {
-        $properties = array_merge($properties, [
-            'type'   => $type,
-        ]);
+        $item = self::make(array_merge($properties, compact('type')), $callback);
 
-        $item = self::make($properties, $callback);
         $this->addChild($item);
 
         return $item;
@@ -470,9 +461,7 @@ class MenuItem implements MenuItemInterface
         $types = ['url', 'route', 'action'];
 
         foreach ($types as $type) {
-            if (array_key_exists($type, $properties)) {
-                return $type;
-            }
+            if (array_key_exists($type, $properties)) return $type;
         }
 
         return null;
